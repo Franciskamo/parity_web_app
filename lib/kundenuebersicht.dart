@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'ansprechpartner.dart';
-import 'offene_posten.dart';
-import 'umsatz_ertrag.dart';
 import 'home_page.dart';
-
+import 'api_service.dart'; // falls noch nicht vorhanden
 
 class Kundenuebersicht extends StatelessWidget {
-  const Kundenuebersicht({Key? key}) : super(key: key);
+  final KundeMitAdresse? kunde;
+
+  const Kundenuebersicht({Key? key, required this.kunde}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

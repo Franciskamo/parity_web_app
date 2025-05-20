@@ -9,8 +9,9 @@ class Kunde {
 
   factory Kunde.fromJson(Map<String, dynamic> json) {
     return Kunde(
-      id: json['kdnLfdnr'] ?? 0,
+      id: json['id'] ?? 0, // statt 'kdnLfdnr'
       kontonummer: json['kdnKontonr']?.toString() ?? 'unbekannt',
     );
   }
+
 }

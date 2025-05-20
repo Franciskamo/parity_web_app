@@ -15,8 +15,8 @@ class Adresse {
     return Adresse(
       ansnr: json['ansnr'] ?? 0,
       name: (json['name001']?.toString()) ?? 'Unbekannter Name',
-      telefon: json['telefon']?.toString() ?? '-',
-      email: json['email']?.toString() ?? '-',
+      telefon: json['ansTelefon']?.toString() ?? '-',
+      email: json['ansEmail']?.toString() ?? '-'
     );
   }
 }

@@ -35,10 +35,22 @@ Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
   final kundenJson = json.decode(kundenResponse.body);
   final adressenJson = json.decode(adressenResponse.body);
 
-  final kunden = (kundenJson as List)
-      .where((k) => k['kdnLfdnr'] != null && k['kdnKontonr'] != null)
+  final kundenJsonList = (kundenJson as List);
+  print('API liefert Kunden: ${kundenJsonList.length}');
+
+  if (kundenJsonList.isNotEmpty) {
+  print('Beispielkunde: ${kundenJsonList[0]}');
+}
+
+  final gefiltert = kundenJsonList
+    .where((k) => k['id'] != null && k['kdnKontonr'] != null)
+    .toList();
+  print('Nach Filter übrig: ${gefiltert.length}');
+
+  final kunden = gefiltert
       .map((k) => Kunde.fromJson(k))
       .toList();
+
 
   final adressen = (adressenJson as List)
       .map((a) => Adresse.fromJson(a))
