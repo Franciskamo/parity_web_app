@@ -7,15 +7,19 @@ import 'ansprechpartner.dart';
 import 'kundenuebersicht.dart';
 import 'offene_posten.dart';
 import 'umsatz_ertrag.dart';
+import 'api_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
+  
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  List<KundeMitAdresse> kunden = [];
+  bool istLaden = true;
+
   String currentPage = 'Home';
   String? hoveredPage;
 
@@ -29,7 +33,18 @@ class _HomePageState extends State<HomePage> {
     MaterialPageRoute(builder: (context) => const LoginPage()),
   );
 }
-
+  @override
+  void initState() {
+    super.initState();
+    ladeKunden(); 
+  }
+  Future<void> ladeKunden() async {
+  final daten = await ladeKombinierteKunden(); 
+  setState(() {
+    kunden = daten;
+    istLaden = false;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -167,15 +182,22 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(height: 16),
                                     Expanded(
-                                      child: ListView(
-                                        children: [
-                                          _buildKundenZeile('2184000', 'GMN Paul Müller Industrie GmbH & Co.KG', '0911/5691-323', 'ekspindeln@gmn.de'),
-                                          _buildKundenZeile('2184000', 'GMN Paul Müller Industrie GmbH & Co.KG', '0911/5691-323', 'ekspindeln@gmn.de'),
-                                          _buildKundenZeile('2184000', 'GMN Paul Müller Industrie GmbH & Co.KG', '0911/5691-323', 'ekspindeln@gmn.de'),
-                                          _buildKundenZeile('2184000', 'GMN Paul Müller Industrie GmbH & Co.KG', '0911/5691-323', 'ekspindeln@gmn.de'),
-                                        ],
-                                      ),
+                                      child: istLaden
+                                          ? const Center(child: CircularProgressIndicator()) // loading
+                                          : ListView.builder(
+                                              itemCount: kunden.length,
+                                              itemBuilder: (context, index) {
+                                                final kunde = kunden[index];
+                                                return _buildKundenZeile(
+                                                  kunde.kundennummer,
+                                                  kunde.name,
+                                                  kunde.telefon,
+                                                  kunde.email,
+                                                );
+                                              },
+                                            ),
                                     ),
+
                                   ],
                                 ),
                               );

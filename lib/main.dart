@@ -5,10 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
-import 'ansprechpartner.dart';
-import 'kundenuebersicht.dart';
-import 'offene_posten.dart';
-import 'umsatz_ertrag.dart';
+
 
 void main() {
   runApp(const MyApp());
