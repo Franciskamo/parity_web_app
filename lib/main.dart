@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController benutzerController = TextEditingController();
   final TextEditingController passwortController = TextEditingController();
 
-  bool istTestModus = true; // true für Test ohne Login
+  bool istTestModus = false; // true für Test ohne Login
 
   Future<bool> login() async {
   try {

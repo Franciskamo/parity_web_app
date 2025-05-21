@@ -1,4 +1,3 @@
-// Angepasste HomePage mit "floating" Dropdown
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:parity_web_app/main.dart';

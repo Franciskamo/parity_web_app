@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'ansprechpartner.dart';
 import 'home_page.dart';
-import 'api_service.dart'; // falls noch nicht vorhanden
+import 'api_service.dart'; 
 
 class Kundenuebersicht extends StatelessWidget {
   final KundeMitAdresse? kunde;
@@ -276,7 +276,7 @@ class Kundenuebersicht extends StatelessWidget {
                         children: [
                           Expanded(child: konditionenCard),
                           const SizedBox(width: 16),
-                          const Expanded(child: SizedBox()), // Ausgleichsbox
+                          const Expanded(child: SizedBox()), 
                         ],
                       ),
                     )
