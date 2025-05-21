@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'ansprechpartner.dart';
-import 'home_page.dart';
 import 'api_service.dart'; 
 
 class Kundenuebersicht extends StatelessWidget {
@@ -28,12 +24,12 @@ class Kundenuebersicht extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Titel
-          const Text(
-            "GMN Paul Müller Industrie GmbH & Co. KG",
+          Text(
+            kunde!.name,
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          const Text(
-            "2184000",
+          Text(
+            kunde!.kundennummer,
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
 
@@ -46,7 +42,7 @@ class Kundenuebersicht extends StatelessWidget {
 
               final anschriftCard = buildInfoCard("Anschrift", Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children:  [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -57,7 +53,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("GMN Paul Müller\nIndustrie GmbH & Co.KG"),
+                          child: Text(kunde!.name),
                         ),
                       ),
                     ],
@@ -72,7 +68,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("Äußere Bayreuther Str. 230"),
+                          child: Text(kunde!.strasse),
                         ),
                       ),
                     ],
@@ -87,7 +83,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("90411 Nürnberg"),
+                          child: Text("${kunde!.plz} ${kunde!.ort}"),
                         ),
                       ),
                     ],
@@ -102,7 +98,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("Deutschland"),
+                          child: Text(kunde!.land),
                         ),
                       ),
                     ],
@@ -112,7 +108,7 @@ class Kundenuebersicht extends StatelessWidget {
 
               final kontaktCard = buildInfoCard("Kontakt", Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Row(
                     children: [
                       SizedBox(
@@ -122,7 +118,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("0911/5691-323"),
+                          child: Text(kunde!.telefon),
                         ),
                       ),
                     ],
@@ -137,7 +133,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("0911/5691-501"),
+                          child: Text(kunde!.fax),
                         ),
                       ),
                     ],
@@ -152,7 +148,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("ekspindeln@gmn.de"),
+                          child: Text(kunde!.email),
                         ),
                       ),
                     ],
@@ -167,7 +163,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 85),
-                          child: Text("www.gmn.de"),
+                          child: Text(kunde!.homepage),
                         ),
                       ),
                     ],
@@ -206,7 +202,7 @@ class Kundenuebersicht extends StatelessWidget {
 
               final konditionenCard = buildInfoCard("Konditionen & Zuständigkeiten", Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Row(
                     children: [
                       SizedBox(
@@ -216,7 +212,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 45),
-                          child: Text("10 Tage 3 %, 30 Tage netto"),
+                          child: Text("${kunde!.zahlungsNr} | ${kunde!.zahlungsText}"),
                         ),
                       ),
                     ],
@@ -231,7 +227,7 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 45),
-                          child: Text("unfrei, ab 250,- EUR frei Haus"),
+                          child: Text("${kunde!.lieferNr} | ${kunde!.lieferText}"),
                         ),
                       ),
                     ],
@@ -246,26 +242,12 @@ class Kundenuebersicht extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 45),
-                          child: Text("Deutsche Post Paket"),
+                          child: Text("${kunde!.versandNr} | ${kunde!.versandText}"),
                         ),
                       ),
                     ],
                   ),
                   SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 140,
-                        child: Text("Vertreter", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 45),
-                          child: Text("Norman Reuter"),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ));
 

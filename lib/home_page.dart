@@ -206,7 +206,10 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                   );
                                 case 'Kundenübersicht':
-                                  return Kundenuebersicht(kunde: ausgewaehlterKunde);
+                                  return ausgewaehlterKunde != null
+                                      ? Kundenuebersicht(kunde: ausgewaehlterKunde!)
+                                      : const Center(child: Text('Kein Kunde ausgewählt'));
+
                                 case 'Ansprechpartner':
                                   return const Ansprechpartner();
                                 default:
