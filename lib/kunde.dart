@@ -1,4 +1,5 @@
 class Kunde {
+  final int kdnLfdnr;
   final int id;
   final String kontonummer;
   final int kdnZbnr;
@@ -7,6 +8,7 @@ class Kunde {
 
 
   Kunde({
+    required this.kdnLfdnr,
     required this.id,
     required this.kontonummer,
     required this.kdnZbnr,
@@ -16,6 +18,7 @@ class Kunde {
 
   factory Kunde.fromJson(Map<String, dynamic> json) {
     return Kunde(
+      kdnLfdnr: json['kdnLfdnr'] ?? 0,
       id: json['id'] ?? 0, 
       kontonummer: json['kdnKontonr']?.toString() ?? 'unbekannt',
       kdnZbnr: json['kdnZbnr'] ?? 0,

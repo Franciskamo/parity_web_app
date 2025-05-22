@@ -1,74 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:parity_web_app/api_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'anspr.dart';
 import 'dart:convert';
-import 'ansprechpartner.dart';
-import 'offene_posten.dart';
-import 'umsatz_ertrag.dart';
-import 'home_page.dart';
 
-class AnsprechpartnerModel {
-  String nachname;
-  String vorname;
-  String abteilung;
-  String telefon;
-  String email;
-  bool istUpdate;
-
-  AnsprechpartnerModel({
-    required this.nachname,
-    required this.vorname,
-    required this.abteilung,
-    required this.telefon,
-    required this.email,
-    this.istUpdate = false,
-  });
-}
 
 class Ansprechpartner extends StatefulWidget {
-  const Ansprechpartner({Key? key}) : super(key: key);
+  final KundeMitAdresse kunde;
+  const Ansprechpartner({Key? key, required this.kunde}) : super(key: key);
 
   @override
   State<Ansprechpartner> createState() => _AnsprechpartnerState();
 }
 
 class _AnsprechpartnerState extends State<Ansprechpartner> {
-  List<AnsprechpartnerModel> ansprechpartnerListe = [
-    AnsprechpartnerModel(
-      nachname: 'Heid',
-      vorname: 'Franziska',
-      abteilung: 'EK Spindeltechnik',
-      telefon: '0911/5691-323',
-      email: 'ekspindeln@gmn.de',
-    ),
-    AnsprechpartnerModel(
-      nachname: 'Müller',
-      vorname: 'Anna',
-      abteilung: 'Vertrieb',
-      telefon: '0911/5691-111',
-      email: 'vertrieb@gmn.de',
-    ),
-    AnsprechpartnerModel(
-      nachname: 'Schmidt',
-      vorname: 'Lukas',
-      abteilung: 'IT Support',
-      telefon: '0911/5691-222',
-      email: 'itsupport@gmn.de',
-    ),
-    AnsprechpartnerModel(
-      nachname: 'Keller',
-      vorname: 'Julia',
-      abteilung: 'Marketing',
-      telefon: '0911/5691-444',
-      email: 'marketing@gmn.de',
-    ),
-    AnsprechpartnerModel(
-      nachname: 'Weber',
-      vorname: 'Tom',
-      abteilung: 'Buchhaltung',
-      telefon: '0911/5691-555',
-      email: 'buchhaltung@gmn.de',
-    ),
-  ];
+  List<AnsprechpartnerModel> ansprechpartnerListe = [];
+  bool istLaden = true;
+  int? bearbeiteIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    ladeAnsprechpartner(); 
+  }
+
+  Future<void> ladeAnsprechpartner() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final headers = {'Authorization': 'Bearer $token'};
+
+    final response = await http.get(
+      Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/${widget.kunde.id}'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
+      final liste = (decoded as List)
+          .map((e) => AnsprechpartnerModel(
+                nachname: e['anpAnspr'] ?? '',
+                vorname: e['anpVorname'] ?? '',
+                abteilung: e['anpAbteilung'] ?? '',
+                telefon: e['anpTelefon'] ?? '',
+                email: e['anpEmail'] ?? '',
+              ))
+          .toList();
+
+      setState(() {
+        ansprechpartnerListe = liste;
+        istLaden = false;
+      });
+    } else {
+      print("Fehler beim Laden: \${response.statusCode}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,13 +71,13 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            "GMN Paul Müller Industrie GmbH & Co. KG",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Text(
+            widget.kunde.name,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          const Text(
-            "2184000",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
+          Text(
+            widget.kunde.kundennummer,
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
           ),
           const SizedBox(height: 24),
           Container(
@@ -135,9 +121,10 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                   },
                 ),
                 ...ansprechpartnerListe.asMap().entries.map((eintrag) {
+                  final index = eintrag.key;
                   final ap = eintrag.value;
 
-                  if (ap.istUpdate) {
+                  if (bearbeiteIndex == index) {
                     final nachnameCtrl = TextEditingController(text: ap.nachname);
                     final vornameCtrl = TextEditingController(text: ap.vorname);
                     final abteilungCtrl = TextEditingController(text: ap.abteilung);
@@ -171,52 +158,18 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                               IconButton(
                                 icon: const Icon(Icons.check, size: 18),
                                 onPressed: () {
-                                  final nachname = nachnameCtrl.text.trim();
-                                  final vorname = vornameCtrl.text.trim();
-                                  final abteilung = abteilungCtrl.text.trim();
-                                  final telefon = telefonCtrl.text.trim();
-                                  final email = emailCtrl.text.trim();
-
-                                  // Validierung: Name muss vorhanden sein + Telefon oder E-Mail
-                                  if (nachname.isEmpty || vorname.isEmpty || (telefon.isEmpty && email.isEmpty)) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Bitte Vorname, Nachname und entweder Telefon oder E-Mail angeben."),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                    return;
-                                  }
-
                                   setState(() {
-                                    ap.nachname = nachname;
-                                    ap.vorname = vorname;
-                                    ap.abteilung = abteilung;
-                                    ap.telefon = telefon;
-                                    ap.email = email;
-                                    ap.istUpdate = false;
+                                    bearbeiteIndex = null; // Nur UI zurücksetzen
                                   });
                                 },
-
                               ),
                               IconButton(
                                 icon: const Icon(Icons.close, size: 18),
                                 onPressed: () {
                                   setState(() {
-                                    final istNeu = ap.nachname.isEmpty &&
-                                        ap.vorname.isEmpty &&
-                                        ap.abteilung.isEmpty &&
-                                        ap.telefon.isEmpty &&
-                                        ap.email.isEmpty;
-
-                                    if (istNeu) {
-                                      ansprechpartnerListe.remove(ap); // eintrag löschen
-                                    } else {
-                                      ap.istUpdate = false; // nur Bearbeiten abbrechen
-                                    }
+                                    bearbeiteIndex = null;
                                   });
                                 },
-
                               ),
                             ],
                           ),
@@ -242,21 +195,14 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                                     children: [
                                       IconButton(
                                         icon: const Icon(Icons.edit, size: 16),
-                                        visualDensity: VisualDensity.compact,
-                                        hoverColor: Colors.transparent,
-                                        // splashColor: Colors.transparent,
-                                        // highlightColor: Colors.transparent,
                                         onPressed: () {
                                           setState(() {
-                                            ap.istUpdate = true;
+                                            bearbeiteIndex = index;
                                           });
                                         },
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.delete, size: 16),
-                                        hoverColor: Colors.transparent,
-                                        // splashColor: Colors.transparent,
-                                        // highlightColor: Colors.transparent,
                                         onPressed: () {},
                                       ),
                                     ],
@@ -267,7 +213,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                           );
                         } else {
                           return buildInfoCard(
-                            "${ap.vorname} ${ap.nachname}",
+                            "\${ap.vorname} \${ap.nachname}",
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -279,20 +225,14 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                                   children: [
                                     IconButton(
                                       icon: const Icon(Icons.edit, size: 16),
-                                      hoverColor: Colors.transparent,
-                                      // splashColor: Colors.transparent,
-                                      // highlightColor: Colors.transparent,
                                       onPressed: () {
                                         setState(() {
-                                          ap.istUpdate = true;
+                                          bearbeiteIndex = index;
                                         });
                                       },
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete, size: 16),
-                                      hoverColor: Colors.transparent,
-                                      // splashColor: Colors.transparent,
-                                      // highlightColor: Colors.transparent,
                                       onPressed: () {},
                                     ),
                                   ],
@@ -305,38 +245,9 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                     );
                   }
                 }).toList(),
-                const SizedBox(height: 1),
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      ansprechpartnerListe.add(
-                        AnsprechpartnerModel(
-                          nachname: '',
-                          vorname: '',
-                          abteilung: '',
-                          telefon: '',
-                          email: '',
-                          istUpdate: true, 
-                        ),
-                      );
-                    });
-                  },
-                  icon: const Icon(Icons.add, color: Color(0xFF333333),),
-                  label: const Text(
-                    'Neuen Ansprechpartner anlegen',
-                    style: TextStyle(color: Color(0xFF333333)),
-                  ),
-                  style: ButtonStyle(
-                    overlayColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-                      if (states.contains(WidgetState.hovered)) return Colors.transparent;
-                      return null;
-                    }),
-                  ),
-
-                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -351,7 +262,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
           SizedBox(
             width: 100,
             child: Text(
-              "$label:",
+              "\$label:",
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -370,7 +281,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
           SizedBox(
             width: 100,
             child: Text(
-              "$label:",
+              "\$label:",
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),

@@ -16,6 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<KundeMitAdresse> kunden = [];
+
   bool istLaden = true;
 
   String currentPage = 'Home';
@@ -41,7 +42,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    ladeKunden();
+
   }
 
   Future<void> ladeKunden() async {
@@ -125,9 +126,20 @@ class _HomePageState extends State<HomePage> {
                                       cursorHeight: 16,
                                       cursorColor: const Color(0xFF333333),
                                       cursorRadius: Radius.circular(3),
-                                      onChanged: (wert) {
+                                      onChanged: (wert) async {
                                         setState(() {
                                           suchbegriff = wert.toLowerCase();
+                                        });
+
+                                      if (kunden.isEmpty) {
+                                        print('Suche gestartet – lade Kunden...');
+                                        final daten = await ladeKombinierteKunden(); 
+
+                                        setState(() {
+                                          kunden = daten;
+                                        });
+                                      }
+                                        setState(() {                 
                                           suchErgebnisse = kunden.where((k) {
                                             return k.name.toLowerCase().contains(suchbegriff) ||
                                               k.kundennummer.toLowerCase().contains(suchbegriff);
@@ -195,13 +207,13 @@ class _HomePageState extends State<HomePage> {
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                              const SizedBox(height: 16),
-                                              ...kunden.map((kunde) => _buildKundenZeile(
-                                                kunde.kundennummer,
-                                                kunde.name,
-                                                kunde.telefon,
-                                                kunde.email,
-                                              )),
+                                              // const SizedBox(height: 16),
+                                              // ...kunden.map((kunde) => _buildKundenZeile(
+                                              //   kunde.kundennummer,
+                                              //   kunde.name,
+                                              //   kunde.telefon,
+                                              //   kunde.email,
+                                              // )),
                                             ],
                                           ),
                                   );
@@ -211,7 +223,8 @@ class _HomePageState extends State<HomePage> {
                                       : const Center(child: Text('Kein Kunde ausgewählt'));
 
                                 case 'Ansprechpartner':
-                                  return const Ansprechpartner();
+                                  return Ansprechpartner(kunde: ausgewaehlterKunde!);
+
                                 default:
                                   return const Center(child: Text('Seite nicht gefunden'));
                               }
@@ -248,6 +261,7 @@ class _HomePageState extends State<HomePage> {
                                         currentPage = 'Kundenübersicht';
                                         dropdownSichtbar = false;
                                         suchbegriff = '';
+                                       
                                       });
                                     },
                                   );
@@ -306,22 +320,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildKundenZeile(String nummer, String name, String telefon, String email) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Expanded(flex: 2, child: Text(nummer)),
-          Expanded(flex: 4, child: Text(name)),
-          Expanded(flex: 3, child: Text(telefon)),
-          Expanded(flex: 4, child: Text(email)),
-        ],
-      ),
-    );
-  }
+  // Widget _buildKundenZeile(String nummer, String name, String telefon, String email) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+  //     margin: const EdgeInsets.only(bottom: 8),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(4),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Expanded(flex: 2, child: Text(nummer)),
+  //         Expanded(flex: 4, child: Text(name)),
+  //         Expanded(flex: 3, child: Text(telefon)),
+  //         Expanded(flex: 4, child: Text(email)),
+  //       ],
+  //     ),
+  //   );
+  // }
 } 

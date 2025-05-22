@@ -1,5 +1,3 @@
-// Erweiterter API-Service mit vollständigen Daten für Kundenübersicht
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,8 +6,10 @@ import 'kunde.dart';
 import 'zahlbed.dart';
 import 'liefbed.dart';
 import 'versart.dart';
+import 'anspr.dart';
 
 class KundeMitAdresse {
+  final int id;
   final String kundennummer;
   final String name;
   final String strasse;
@@ -26,8 +26,11 @@ class KundeMitAdresse {
   final String lieferText;
   final String versandNr;
   final String versandText;
+  final List<AnsprechpartnerModel> ansprechpartner;
+
 
   KundeMitAdresse({
+    required this.id,
     required this.kundennummer,
     required this.name,
     required this.strasse,
@@ -44,6 +47,8 @@ class KundeMitAdresse {
     required this.lieferText,
     required this.versandNr,
     required this.versandText,
+    required this.ansprechpartner,
+
   });
 }
 
@@ -76,6 +81,15 @@ Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
     (a) => a.ansnr == kunde.id,
     orElse: () => Adresse.leer(),
   );
+  final ansprechpartnerResponse = await http.get(
+    Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/${kunde.kdnLfdnr}'),
+    headers: headers,
+  );
+
+  final ansprechpartnerJson = json.decode(ansprechpartnerResponse.body);
+  final ansprechpartnerListe = (ansprechpartnerJson as List)
+      .map((a) => AnsprechpartnerModel.fromJson(a))
+      .toList();
 
   final zahlbedResponse = await http.get(
     Uri.parse('https://api.parity-software.com/api/v1/zahlungsbedingungen/${kunde.kdnZbnr}'),
@@ -91,14 +105,21 @@ Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
   final decodedLiefer = json.decode(liefbedResponse.body);
   final liefer = Liefbed.fromJson(decodedLiefer[0]);
 
-  final versartResponse = await http.get(
-    Uri.parse('https://api.parity-software.com/api/v1/versandarten/${kunde.kdnVsanr}'),
-    headers: headers,
-  );
-  final decodedVersand = json.decode(versartResponse.body);
-  final versand = Versart.fromJson(decodedVersand[0]);
+  Versart versand = Versart.leer(); // ⬅️ Dummy als Fallback
+
+  try {
+    final versartResponse = await http.get(
+      Uri.parse('https://api.parity-software.com/api/v1/versandarten/${kunde.kdnVsanr}'),
+      headers: headers,
+    );
+    versand = Versart.fromJson(json.decode(versartResponse.body));
+  } catch (e) {
+    print( 'Versandart konnte nicht geladen werden für Kunde ${kunde.kdnVsanr}');
+  }
+
 
   kombiniert.add(KundeMitAdresse(
+    id: kunde.id,
     kundennummer: kunde.kontonummer,
     name: adresse.name,
     strasse: adresse.strasse,
@@ -115,6 +136,8 @@ Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
     lieferText: liefer.lbdBez,
     versandNr: versand.vsaNr.toString(),
     versandText: versand.vsaBez,
+    ansprechpartner: ansprechpartnerListe,
+
   ));
 }
 
