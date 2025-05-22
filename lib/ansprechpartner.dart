@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:parity_web_app/api_service.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'anspr.dart';
-import 'dart:convert';
-
 
 class Ansprechpartner extends StatefulWidget {
   final KundeMitAdresse kunde;
@@ -22,39 +18,21 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
   @override
   void initState() {
     super.initState();
-    ladeAnsprechpartner(); 
+    ladeUndZeigeAnsprechpartner(); 
   }
 
-  Future<void> ladeAnsprechpartner() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    final headers = {'Authorization': 'Bearer $token'};
-
-    final response = await http.get(
-      Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/${widget.kunde.id}'),
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {
-      final decoded = json.decode(response.body);
-      final liste = (decoded as List)
-          .map((e) => AnsprechpartnerModel(
-                nachname: e['anpAnspr'] ?? '',
-                vorname: e['anpVorname'] ?? '',
-                abteilung: e['anpAbteilung'] ?? '',
-                telefon: e['anpTelefon'] ?? '',
-                email: e['anpEmail'] ?? '',
-              ))
-          .toList();
-
-      setState(() {
-        ansprechpartnerListe = liste;
-        istLaden = false;
-      });
-    } else {
-      print("Fehler beim Laden: \${response.statusCode}");
-    }
+  void ladeUndZeigeAnsprechpartner() async {
+  try {
+    final liste = await ladeAnsprechpartner(widget.kunde.id.toString()); 
+    setState(() {
+      ansprechpartnerListe = liste;
+      istLaden = false;
+    });
+  } catch (e) {
+    debugPrint("Fehler beim Laden: $e");
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -148,18 +126,18 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildInfoZeileWidget('Nachname', TextField(controller: nachnameCtrl)),
-                          _buildInfoZeileWidget('Vorname', TextField(controller: vornameCtrl)),
-                          _buildInfoZeileWidget('Abteilung', TextField(controller: abteilungCtrl)),
-                          _buildInfoZeileWidget('Telefon', TextField(controller: telefonCtrl)),
-                          _buildInfoZeileWidget('E-Mail', TextField(controller: emailCtrl)),
+                          buildTextZeileWidget('Nachname', TextField(controller: nachnameCtrl)),
+                          buildTextZeileWidget('Vorname', TextField(controller: vornameCtrl)),
+                          buildTextZeileWidget('Abteilung', TextField(controller: abteilungCtrl)),
+                          buildTextZeileWidget('Telefon', TextField(controller: telefonCtrl)),
+                          buildTextZeileWidget('E-Mail', TextField(controller: emailCtrl)),
                           Row(
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.check, size: 18),
                                 onPressed: () {
                                   setState(() {
-                                    bearbeiteIndex = null; // Nur UI zurücksetzen
+                                    bearbeiteIndex = null; 
                                   });
                                 },
                               ),
@@ -217,9 +195,9 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildInfoZeile("Abteilung", ap.abteilung),
-                                _buildInfoZeile("Telefon", ap.telefon),
-                                _buildInfoZeile("E-Mail", ap.email),
+                                buildTextZeile("Abteilung", ap.abteilung),
+                                buildTextZeile("Telefon", ap.telefon),
+                                buildTextZeile("E-Mail", ap.email),
                                 const SizedBox(height: 6),
                                 Row(
                                   children: [
@@ -253,7 +231,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
     );
   }
 
-  Widget _buildInfoZeile(String label, String wert) {
+  Widget buildTextZeile(String label, String wert) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -272,7 +250,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
     );
   }
 
-  Widget _buildInfoZeileWidget(String label, Widget widget) {
+  Widget buildTextZeileWidget(String label, Widget widget) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(

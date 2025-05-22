@@ -52,12 +52,37 @@ class KundeMitAdresse {
   });
 }
 
+Future<List<AnsprechpartnerModel>> ladeAnsprechpartner(String kundenId) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+  final headers = {'Authorization': 'Bearer $token'};
+
+  final response = await http.get(
+    Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/$kundenId'),
+    headers: headers,
+  );
+
+  if (response.statusCode == 200) {
+    final decoded = json.decode(response.body);
+    return (decoded as List).map((e) => AnsprechpartnerModel(
+      nachname: e['anpAnspr'] ?? '',
+      vorname: e['anpVorname'] ?? '',
+      abteilung: e['anpAbteilung'] ?? '',
+      telefon: e['anpTelefon'] ?? '',
+      email: e['anpEmail'] ?? '',
+    )).toList();
+  } else {
+    throw Exception("Fehler beim Laden: ${response.statusCode}");
+  }
+}
+
+
 Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
 
   final headers = {'Authorization': 'Bearer $token'};
-
+// Kunden und Adressdaten vom Server abrufen
   final kundenResponse = await http.get(
     Uri.parse('https://api.parity-software.com/api/v1/kunden'),
     headers: headers,
@@ -105,7 +130,7 @@ Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
   final decodedLiefer = json.decode(liefbedResponse.body);
   final liefer = Liefbed.fromJson(decodedLiefer[0]);
 
-  Versart versand = Versart.leer(); // ⬅️ Dummy als Fallback
+  Versart versand = Versart.leer(); // falls keine passende Adresse gefunden
 
   try {
     final versartResponse = await http.get(

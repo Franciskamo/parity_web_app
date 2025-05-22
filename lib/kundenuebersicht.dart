@@ -23,7 +23,7 @@ class Kundenuebersicht extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Titel
+          // Kundenname und kundennummer anzeigen
           Text(
             kunde!.name,
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -35,7 +35,7 @@ class Kundenuebersicht extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          //Anschrift + Kontakt
+          //Anschrift und  Kontaktdaten
           LayoutBuilder(
             builder: (context, constraints) {
               bool isWide = constraints.maxWidth > 600;
@@ -195,7 +195,7 @@ class Kundenuebersicht extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Konditionen (+leer)
+          // Konditionen 
           LayoutBuilder(
             builder: (context, constraints) {
               bool isWide = constraints.maxWidth > 600;
@@ -269,7 +269,6 @@ class Kundenuebersicht extends StatelessWidget {
                     );
             },
           ),
-
         ],
       ),
     );

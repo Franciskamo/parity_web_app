@@ -38,8 +38,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController benutzerController = TextEditingController();
   final TextEditingController passwortController = TextEditingController();
 
-  bool istTestModus = false; // true für Test ohne Login
-
+  
+  // Login mit Benutzerdaten und speichern des Tokens
   Future<bool> login() async {
   try {
     final url = Uri.parse("https://api.parity-software.com/api/v1/auth/login");
@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString('token', token);
       await prefs.setString('expiresAt', expiresAt.toIso8601String());
 
-      // Timer starten
+      // Token vor Ablauf automatisch erneuern
       final refreshZeit = expiresAt.difference(DateTime.now()) - const Duration(minutes: 2);
       if (refreshZeit > Duration.zero) {
         Timer(refreshZeit, () {
@@ -119,10 +119,10 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString('token', newtoken);
       await prefs.setString('expiresAt', newExpiresAt.toIso8601String());
 
-      final refreshZeit = newExpiresAt.difference(DateTime.now()) - const Duration(minutes: 2); // hier wird die differenz zwischen ablaufzeit und 'jetzt' ausgerechnet
-      if (refreshZeit > Duration.zero) { // starte timer wenn noch nicht abgelaufen(differenz größer als 0)
-        Timer(refreshZeit, () { // wartet 2 minuten (duration)
-          refreshToken(); // refreshToken aufrufen
+      final refreshZeit = newExpiresAt.difference(DateTime.now()) - const Duration(minutes: 2); // Zeit bis Ablauf berechnen
+      if (refreshZeit > Duration.zero) { // Timer nur starten wenn noch gültig
+        Timer(refreshZeit, () { 
+          refreshToken(); 
         });
       }
 
@@ -207,25 +207,18 @@ class _LoginPageState extends State<LoginPage> {
                     print('Benutzer: ${benutzerController.text}');
                     print('Passwort: ${passwortController.text}');
 
-                    // Test ohne login
-                    if (istTestModus) {
+                    bool success = await login();
+                    if (success) {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const HomePage()),
                       );
                     } else {
-                      bool success = await login();
-                      if (success) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const HomePage()),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Login fehlgeschlagen')),
-                        );
-                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Login fehlgeschlagen')),
+                      );
                     }
+
                   },
 
                   style: ButtonStyle(

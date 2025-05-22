@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:parity_web_app/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'ansprechpartner.dart';
 import 'kundenuebersicht.dart';
 import 'api_service.dart';
@@ -28,6 +26,7 @@ class _HomePageState extends State<HomePage> {
 
   final GlobalKey _topBarKey = GlobalKey();
 
+  // Token löschen und zurück zur login seite
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
@@ -44,7 +43,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
   }
-
+  //Kundendaten aus der API laden und anzeigen
   Future<void> ladeKunden() async {
     final daten = await ladeKombinierteKunden();
     print('Geladene Kunden: ${daten.length}');
@@ -61,7 +60,7 @@ class _HomePageState extends State<HomePage> {
         double breite = constraints.maxWidth;
         bool nurIcons = breite < 800;
         double sidebarBreite = nurIcons ? 70 : 250;
-
+        // Sidebar und navigation
         return Scaffold(
           backgroundColor: const Color(0xFFF7F7F7),
           body: Row(
@@ -86,11 +85,11 @@ class _HomePageState extends State<HomePage> {
                     Expanded(
                       child: Column(
                         children: [
-                          _buildMenuItem('assets/icons/home.png', 'Home', nurIcons),
-                          _buildMenuItem('assets/icons/ku.png', 'Kundenübersicht', nurIcons),
-                          _buildMenuItem('assets/icons/ap.png', 'Ansprechpartner', nurIcons),
-                          _buildMenuItem('assets/icons/ue.png', 'Umsatz/Ertrag', nurIcons),
-                          _buildMenuItem('assets/icons/op.png', 'Offene Posten', nurIcons),
+                          buildMenupunkt('assets/icons/home.png', 'Home', nurIcons),
+                          buildMenupunkt('assets/icons/ku.png', 'Kundenübersicht', nurIcons),
+                          buildMenupunkt('assets/icons/ap.png', 'Ansprechpartner', nurIcons),
+                          buildMenupunkt('assets/icons/ue.png', 'Umsatz/Ertrag', nurIcons),
+                          buildMenupunkt('assets/icons/op.png', 'Offene Posten', nurIcons),
                         ],
                       ),
                     ),
@@ -132,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                                         });
 
                                       if (kunden.isEmpty) {
-                                        print('Suche gestartet – lade Kunden...');
+                                        print('Suche gestartet - lade Kunden...');
                                         final daten = await ladeKombinierteKunden(); 
 
                                         setState(() {
@@ -188,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                         ),
-
+                        // Seiteninhalt
                         Expanded(
                           child: Builder(
                             builder: (context) {
@@ -207,13 +206,6 @@ class _HomePageState extends State<HomePage> {
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                              // const SizedBox(height: 16),
-                                              // ...kunden.map((kunde) => _buildKundenZeile(
-                                              //   kunde.kundennummer,
-                                              //   kunde.name,
-                                              //   kunde.telefon,
-                                              //   kunde.email,
-                                              // )),
                                             ],
                                           ),
                                   );
@@ -281,7 +273,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMenuItem(String imagePath, String label, bool nurIcons) {
+  Widget buildMenupunkt(String imagePath, String label, bool nurIcons) {
     bool istAktiv = label == currentPage;
     bool istHover = label == hoveredPage;
 
@@ -319,23 +311,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  // Widget _buildKundenZeile(String nummer, String name, String telefon, String email) {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-  //     margin: const EdgeInsets.only(bottom: 8),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(4),
-  //     ),
-  //     child: Row(
-  //       children: [
-  //         Expanded(flex: 2, child: Text(nummer)),
-  //         Expanded(flex: 4, child: Text(name)),
-  //         Expanded(flex: 3, child: Text(telefon)),
-  //         Expanded(flex: 4, child: Text(email)),
-  //       ],
-  //     ),
-  //   );
-  // }
 } 
