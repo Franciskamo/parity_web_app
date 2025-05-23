@@ -35,7 +35,6 @@ class Kundenuebersicht extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          //Anschrift und  Kontaktdaten
           LayoutBuilder(
             builder: (context, constraints) {
               bool isWide = constraints.maxWidth > 600;
@@ -43,131 +42,22 @@ class Kundenuebersicht extends StatelessWidget {
               final anschriftCard = buildInfoCard("Anschrift", Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children:  [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("Name", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text(kunde!.name),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("Straße", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text(kunde!.strasse),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("Ort", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text("${kunde!.plz} ${kunde!.ort}"),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("Land", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text(kunde!.land),
-                        ),
-                      ),
-                    ],
-                  ),
+                  buildTextZeile("Name", kunde!.name),
+                  buildTextZeile("Straße", kunde!.strasse),
+                  buildTextZeile("Ort", "${kunde!.plz} ${kunde!.ort}"),
+                  buildTextZeile("Land", kunde!.land),
+
                 ],
               ));
 
               final kontaktCard = buildInfoCard("Kontakt", Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("Telefon", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text(kunde!.telefon),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("Fax", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text(kunde!.fax),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("E-Mail", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text(kunde!.email),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text("Webseite", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 85),
-                          child: Text(kunde!.homepage),
-                        ),
-                      ),
-                    ],
-                  ),
+                  buildTextZeile("Telefon", kunde!.telefon),
+                  buildTextZeile("Fax", kunde!.fax),
+                  buildTextZeile("E-Mail", kunde!.email),
+                  buildTextZeile("Webseite", kunde!.homepage),
+
                 ],
               ));
 
@@ -192,10 +82,8 @@ class Kundenuebersicht extends StatelessWidget {
             },
           ),
 
-
           const SizedBox(height: 16),
 
-          // Konditionen 
           LayoutBuilder(
             builder: (context, constraints) {
               bool isWide = constraints.maxWidth > 600;
@@ -203,50 +91,10 @@ class Kundenuebersicht extends StatelessWidget {
               final konditionenCard = buildInfoCard("Konditionen & Zuständigkeiten", Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 140,
-                        child: Text("Zahlungsbedingung", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 45),
-                          child: Text("${kunde!.zahlungsNr} | ${kunde!.zahlungsText}"),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 140,
-                        child: Text("Lieferbedingung", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 45),
-                          child: Text("${kunde!.lieferNr} | ${kunde!.lieferText}"),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 140,
-                        child: Text("Versandart", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 45),
-                          child: Text("${kunde!.versandNr} | ${kunde!.versandText}"),
-                        ),
-                      ),
-                    ],
-                  ),
+                  buildTextZeile("Zahlungsbedingung", "${kunde!.zahlungsNr} | ${kunde!.zahlungsText}"),
+                  buildTextZeile("Lieferbedingung", "${kunde!.lieferNr} | ${kunde!.lieferText}"),
+                  buildTextZeile("Versandart", "${kunde!.versandNr} | ${kunde!.versandText}"),
+
                   SizedBox(height: 8),
                 ],
               ));
@@ -297,6 +145,24 @@ class Kundenuebersicht extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           content,
+        ],
+      ),
+    );
+  }
+  Widget buildTextZeile(String label, String wert) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              "$label:",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(child: Text(wert)),
         ],
       ),
     );

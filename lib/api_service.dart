@@ -102,45 +102,46 @@ Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
   List<KundeMitAdresse> kombiniert = [];
 
   for (Kunde kunde in kunden) {
-  Adresse adresse = adressen.firstWhere(
-    (a) => a.ansnr == kunde.id,
-    orElse: () => Adresse.leer(),
-  );
-  final ansprechpartnerResponse = await http.get(
-    Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/${kunde.kdnLfdnr}'),
-    headers: headers,
-  );
+    Adresse adresse = adressen.firstWhere(
+      (a) => a.ansnr == kunde.id,
+      orElse: () => Adresse.leer(),
+    );
 
-  final ansprechpartnerJson = json.decode(ansprechpartnerResponse.body);
-  final ansprechpartnerListe = (ansprechpartnerJson as List)
-      .map((a) => AnsprechpartnerModel.fromJson(a))
-      .toList();
-
-  final zahlbedResponse = await http.get(
-    Uri.parse('https://api.parity-software.com/api/v1/zahlungsbedingungen/${kunde.kdnZbnr}'),
-    headers: headers,
-  );
-  final decodedZahlung = json.decode(zahlbedResponse.body);
-  final zahlung = Zahlbed.fromJson(decodedZahlung[0]);
-
-  final liefbedResponse = await http.get(
-    Uri.parse('https://api.parity-software.com/api/v1/lieferbedingungen/${kunde.kdnLbdnr}'),
-    headers: headers,
-  );
-  final decodedLiefer = json.decode(liefbedResponse.body);
-  final liefer = Liefbed.fromJson(decodedLiefer[0]);
-
-  Versart versand = Versart.leer(); // falls keine passende Adresse gefunden
-
-  try {
-    final versartResponse = await http.get(
-      Uri.parse('https://api.parity-software.com/api/v1/versandarten/${kunde.kdnVsanr}'),
+    final ansprechpartnerResponse = await http.get(
+      Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/${kunde.kdnLfdnr}'),
       headers: headers,
     );
-    versand = Versart.fromJson(json.decode(versartResponse.body));
-  } catch (e) {
-    print( 'Versandart konnte nicht geladen werden für Kunde ${kunde.kdnVsanr}');
-  }
+    final ansprechpartnerJson = json.decode(ansprechpartnerResponse.body);
+    final ansprechpartnerListe = (ansprechpartnerJson as List)
+        .map((a) => AnsprechpartnerModel.fromJson(a))
+        .toList();
+
+    final zahlbedResponse = await http.get(
+      Uri.parse('https://api.parity-software.com/api/v1/zahlungsbedingungen/${kunde.kdnZbnr}'),
+      headers: headers,
+    );
+    final decodedZahlung = json.decode(zahlbedResponse.body);
+    final zahlung = Zahlbed.fromJson(decodedZahlung[0]);
+
+    final liefbedResponse = await http.get(
+      Uri.parse('https://api.parity-software.com/api/v1/lieferbedingungen/${kunde.kdnLbdnr}'),
+      headers: headers,
+    );
+    final decodedLiefer = json.decode(liefbedResponse.body);
+    final liefer = Liefbed.fromJson(decodedLiefer[0]);
+
+    Versart versand = Versart.leer(); // falls keine passende Adresse gefunden
+
+    try {
+      final versartResponse = await http.get(
+        Uri.parse('https://api.parity-software.com/api/v1/versandarten/${kunde.kdnVsanr}'),
+        headers: headers,
+      );
+      final decodedVersand = json.decode(versartResponse.body);
+      versand = Versart.fromJson(decodedVersand[0]);
+    } catch (e) {
+      print('Versandart konnte nicht geladen werden für Kunde ${kunde.kdnVsanr}');
+    }
 
 
   kombiniert.add(KundeMitAdresse(

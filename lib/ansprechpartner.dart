@@ -191,7 +191,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                           );
                         } else {
                           return buildInfoCard(
-                            "\${ap.vorname} \${ap.nachname}",
+                            "${ap.vorname} ${ap.nachname}",
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -240,7 +240,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
           SizedBox(
             width: 100,
             child: Text(
-              "\$label:",
+              "$label:",
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
