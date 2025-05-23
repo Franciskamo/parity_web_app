@@ -131,7 +131,6 @@ class _HomePageState extends State<HomePage> {
                                         });
 
                                       if (kunden.isEmpty) {
-                                        print('Suche gestartet - lade Kunden...');
                                         final daten = await ladeKombinierteKunden(); 
 
                                         setState(() {

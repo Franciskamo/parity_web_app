@@ -157,14 +157,23 @@ class Kundenuebersicht extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(
-              "$label:",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            child: Text("$label:", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(left: 85),
+              child: Text(wert),
             ),
           ),
-          Expanded(child: Text(wert)),
+          Expanded(
+            child: Text(
+              wert,
+              softWrap: true, // sorgt für Umbruch bei langen Texten
+            ),
+          ),
         ],
       ),
     );
   }
+
 }
