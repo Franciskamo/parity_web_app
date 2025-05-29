@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:parity_web_app/api_service.dart';
 import 'anspr.dart';
 
+
 class Ansprechpartner extends StatefulWidget {
   final KundeMitAdresse kunde;
   const Ansprechpartner({Key? key, required this.kunde}) : super(key: key);
@@ -22,17 +23,16 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
   }
 
   void ladeUndZeigeAnsprechpartner() async {
-  try {
-    final liste = await ladeAnsprechpartner(widget.kunde.id.toString()); 
-    setState(() {
-      ansprechpartnerListe = liste;
-      istLaden = false;
-    });
-  } catch (e) {
-    debugPrint("Fehler beim Laden: $e");
+    try {
+      final liste = await ladeAnsprechpartner(widget.kunde.id.toString());
+      setState(() {
+        ansprechpartnerListe = liste;
+        istLaden = false;
+      });
+    } catch (e) {
+      debugPrint("Fehler beim Laden: $e");
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +76,9 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                         children: [
                           Row(
                             children: const [
-                              Expanded(flex: 2, child: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                              Expanded(flex: 2, child: Text('Vorname', style: TextStyle(fontWeight: FontWeight.bold))),
-                              Expanded(flex: 3, child: Text('Abteilung', style: TextStyle(fontWeight: FontWeight.bold))),
+                              Expanded(flex: 1, child: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
+                              Expanded(flex: 1, child: Text('Vorname', style: TextStyle(fontWeight: FontWeight.bold))),
+                              Expanded(flex: 2, child: Text('Abteilung', style: TextStyle(fontWeight: FontWeight.bold))),
                               Expanded(flex: 2, child: Text('Telefon', style: TextStyle(fontWeight: FontWeight.bold))),
                               Expanded(flex: 3, child: Text('E-Mail', style: TextStyle(fontWeight: FontWeight.bold))),
                               Expanded(flex: 1, child: SizedBox()),
@@ -162,9 +162,9 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Row(
                               children: [
-                                Expanded(flex: 2, child: Text(ap.nachname)),
-                                Expanded(flex: 2, child: Text(ap.vorname)),
-                                Expanded(flex: 3, child: Text(ap.abteilung)),
+                                Expanded(flex: 1, child: Text(ap.nachname)),
+                                Expanded(flex: 1, child: Text(ap.vorname)),
+                                Expanded(flex: 2, child: Text(ap.abteilung)),
                                 Expanded(flex: 2, child: Text(ap.telefon)),
                                 Expanded(flex: 3, child: Text(ap.email)),
                                 Expanded(
@@ -172,7 +172,8 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                                   child: Row(
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.edit, size: 16),
+                                        icon: const Icon(Icons.edit, size: 14),
+                                        padding: EdgeInsets.zero,
                                         onPressed: () {
                                           setState(() {
                                             bearbeiteIndex = index;
@@ -180,7 +181,8 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                                         },
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.delete, size: 16),
+                                        icon: const Icon(Icons.delete, size: 14),
+                                        padding: EdgeInsets.zero,
                                         onPressed: () {},
                                       ),
                                     ],
@@ -202,7 +204,8 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                                 Row(
                                   children: [
                                     IconButton(
-                                      icon: const Icon(Icons.edit, size: 16),
+                                      icon: const Icon(Icons.edit, size: 14),
+                                      padding: EdgeInsets.zero,
                                       onPressed: () {
                                         setState(() {
                                           bearbeiteIndex = index;
@@ -210,7 +213,8 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
                                       },
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete, size: 16),
+                                      icon: const Icon(Icons.delete, size: 14),
+                                      padding: EdgeInsets.zero,
                                       onPressed: () {},
                                     ),
                                   ],
@@ -259,7 +263,7 @@ class _AnsprechpartnerState extends State<Ansprechpartner> {
           SizedBox(
             width: 100,
             child: Text(
-              "\$label:",
+              "$label:",
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),

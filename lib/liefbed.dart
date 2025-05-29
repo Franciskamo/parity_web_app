@@ -14,5 +14,11 @@ class Liefbed {
     );
   }
 
-  static Liefbed leer() => Liefbed(lbdNr: 0, lbdBez: '-');
+  factory Liefbed.leer() {
+  return Liefbed(
+    lbdNr: 0,
+    lbdBez: '',
+  );
+}
+
 }

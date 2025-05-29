@@ -14,5 +14,11 @@ class Versart {
     );
   }
 
-  static Versart leer() => Versart(vsaNr: 0, vsaBez: '-');
+  factory Versart.leer() {
+  return Versart(
+    vsaNr: 0,
+    vsaBez: '',
+  );
+}
+
 }

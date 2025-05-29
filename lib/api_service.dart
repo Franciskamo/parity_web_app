@@ -9,6 +9,7 @@ import 'versart.dart';
 import 'anspr.dart';
 
 class KundeMitAdresse {
+  final int kdnLfdnr;
   final int id;
   final String kundennummer;
   final String name;
@@ -28,8 +29,8 @@ class KundeMitAdresse {
   final String versandText;
   final List<AnsprechpartnerModel> ansprechpartner;
 
-
   KundeMitAdresse({
+    required this.kdnLfdnr,
     required this.id,
     required this.kundennummer,
     required this.name,
@@ -48,7 +49,6 @@ class KundeMitAdresse {
     required this.versandNr,
     required this.versandText,
     required this.ansprechpartner,
-
   });
 }
 
@@ -56,6 +56,8 @@ Future<List<AnsprechpartnerModel>> ladeAnsprechpartner(String kundenId) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
   final headers = {'Authorization': 'Bearer $token'};
+
+  print('Lade Ansprechpartner für KundenID: $kundenId');
 
   final response = await http.get(
     Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/$kundenId'),
@@ -76,75 +78,97 @@ Future<List<AnsprechpartnerModel>> ladeAnsprechpartner(String kundenId) async {
   }
 }
 
-
-Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
+Future<List<Kunde>> sucheKunden() async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
-
   final headers = {'Authorization': 'Bearer $token'};
-// Kunden und Adressdaten vom Server abrufen
+  
+
   final kundenResponse = await http.get(
     Uri.parse('https://api.parity-software.com/api/v1/kunden'),
     headers: headers,
   );
-
   final adressenResponse = await http.get(
     Uri.parse('https://api.parity-software.com/api/v1/adressen'),
     headers: headers,
   );
 
-  final kundenJson = json.decode(kundenResponse.body);
+  if (kundenResponse.statusCode == 200 && adressenResponse.statusCode == 200) {
+    final kundenJson = json.decode(kundenResponse.body);
+    print('Rohdaten erster Kunde: ${kundenJson[0]}');
+    final adressenJson = json.decode(adressenResponse.body);
+
+    final kunden = (kundenJson as List).map((k) => Kunde.fromJson(k)).toList();
+    final adressen = (adressenJson as List).map((a) => Adresse.fromJson(a)).toList();
+
+    for (var kunde in kunden) {
+      final adresse = adressen.firstWhere(
+        (a) => a.ansnr == kunde.id,
+        orElse: () => Adresse.leer(),
+      );
+      kunde.name = adresse.name;
+      print('Kunde: ${kunde.kontonummer}, kdnLfdnr: ${kunde.kdnLfdnr}');
+    }
+
+    return kunden;
+  } else {
+    throw Exception('Fehler beim Laden der Kunden oder Adressen');
+  }
+}
+
+Future<KundeMitAdresse> ladeKundeMitAdresse(Kunde kunde) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+  final headers = {'Authorization': 'Bearer $token'};
+
+  final adressenResponse = await http.get(
+    Uri.parse('https://api.parity-software.com/api/v1/adressen'),
+    headers: headers,
+  );
   final adressenJson = json.decode(adressenResponse.body);
-
-  final kunden = (kundenJson as List).map((k) => Kunde.fromJson(k)).toList();
   final adressen = (adressenJson as List).map((a) => Adresse.fromJson(a)).toList();
+  final adresse = adressen.firstWhere(
+    (a) => a.ansnr == kunde.id,
+    orElse: () => Adresse.leer(),
+  );
 
-  List<KundeMitAdresse> kombiniert = [];
+  final ansprechpartnerListe = <AnsprechpartnerModel>[];
 
-  for (Kunde kunde in kunden) {
-    Adresse adresse = adressen.firstWhere(
-      (a) => a.ansnr == kunde.id,
-      orElse: () => Adresse.leer(),
-    );
-
-    final ansprechpartnerResponse = await http.get(
-      Uri.parse('https://api.parity-software.com/api/v1/ansprechpartner/${kunde.kdnLfdnr}'),
-      headers: headers,
-    );
-    final ansprechpartnerJson = json.decode(ansprechpartnerResponse.body);
-    final ansprechpartnerListe = (ansprechpartnerJson as List)
-        .map((a) => AnsprechpartnerModel.fromJson(a))
-        .toList();
-
-    final zahlbedResponse = await http.get(
+  Zahlbed zahlung;
+  try {
+    final r = await http.get(
       Uri.parse('https://api.parity-software.com/api/v1/zahlungsbedingungen/${kunde.kdnZbnr}'),
       headers: headers,
     );
-    final decodedZahlung = json.decode(zahlbedResponse.body);
-    final zahlung = Zahlbed.fromJson(decodedZahlung[0]);
+    zahlung = r.statusCode == 200 ? Zahlbed.fromJson(json.decode(r.body)[0]) : Zahlbed.leer();
+  } catch (_) {
+    zahlung = Zahlbed.leer();
+  }
 
-    final liefbedResponse = await http.get(
+  Liefbed liefer;
+  try {
+    final r = await http.get(
       Uri.parse('https://api.parity-software.com/api/v1/lieferbedingungen/${kunde.kdnLbdnr}'),
       headers: headers,
     );
-    final decodedLiefer = json.decode(liefbedResponse.body);
-    final liefer = Liefbed.fromJson(decodedLiefer[0]);
+    liefer = r.statusCode == 200 ? Liefbed.fromJson(json.decode(r.body)[0]) : Liefbed.leer();
+  } catch (_) {
+    liefer = Liefbed.leer();
+  }
 
-    Versart versand = Versart.leer(); // falls keine passende Adresse gefunden
+  Versart versand;
+  try {
+    final r = await http.get(
+      Uri.parse('https://api.parity-software.com/api/v1/versandarten/${kunde.kdnVsanr}'),
+      headers: headers,
+    );
+    versand = r.statusCode == 200 ? Versart.fromJson(json.decode(r.body)[0]) : Versart.leer();
+  } catch (_) {
+    versand = Versart.leer();
+  }
 
-    try {
-      final versartResponse = await http.get(
-        Uri.parse('https://api.parity-software.com/api/v1/versandarten/${kunde.kdnVsanr}'),
-        headers: headers,
-      );
-      final decodedVersand = json.decode(versartResponse.body);
-      versand = Versart.fromJson(decodedVersand[0]);
-    } catch (e) {
-      print('Versandart konnte nicht geladen werden für Kunde ${kunde.kdnVsanr}');
-    }
-
-
-  kombiniert.add(KundeMitAdresse(
+  return KundeMitAdresse(
+    kdnLfdnr: kunde.kdnLfdnr,
     id: kunde.id,
     kundennummer: kunde.kontonummer,
     name: adresse.name,
@@ -163,10 +187,5 @@ Future<List<KundeMitAdresse>> ladeKombinierteKunden() async {
     versandNr: versand.vsaNr.toString(),
     versandText: versand.vsaBez,
     ansprechpartner: ansprechpartnerListe,
-
-  ));
-}
-
-
-  return kombiniert;
+  );
 }

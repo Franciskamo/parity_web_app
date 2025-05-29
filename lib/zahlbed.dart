@@ -14,5 +14,11 @@ class Zahlbed {
     );
   }
 
-  static Zahlbed leer() => Zahlbed(zbdNr: 0, zbdBez: '-');
+  factory Zahlbed.leer() {
+  return Zahlbed(
+    zbdNr: 0,
+    zbdBez: '',
+  );
+}
+
 }

@@ -156,19 +156,14 @@ class Kundenuebersicht extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 180,
             child: Text("$label:", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(left: 85),
-              child: Text(wert),
-            ),
-          ),
+          
           Expanded(
             child: Text(
               wert,
-              softWrap: true, // sorgt für Umbruch bei langen Texten
+              softWrap: false, 
             ),
           ),
         ],

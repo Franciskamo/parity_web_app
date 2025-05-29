@@ -1,8 +1,10 @@
+// komplette angepasste home_page.dart mit richtiger Sidebar-Logik und aktueller Kunden-Übersicht
 import 'package:flutter/material.dart';
 import 'package:parity_web_app/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ansprechpartner.dart';
 import 'kundenuebersicht.dart';
+import 'kunde.dart';
 import 'api_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,20 +15,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<KundeMitAdresse> kunden = [];
-
+  List<Kunde> kunden = [];
+  List<Kunde> suchErgebnisse = [];
   bool istLaden = true;
-
   String currentPage = 'Home';
   String? hoveredPage;
   KundeMitAdresse? ausgewaehlterKunde;
   String suchbegriff = '';
-  List<KundeMitAdresse> suchErgebnisse = [];
   bool dropdownSichtbar = false;
 
   final GlobalKey _topBarKey = GlobalKey();
 
-  // Token löschen und zurück zur login seite
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
@@ -41,15 +40,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
-  }
-  //Kundendaten aus der API laden und anzeigen
-  Future<void> ladeKunden() async {
-    final daten = await ladeKombinierteKunden();
-    print('Geladene Kunden: ${daten.length}');
-    setState(() {
-      kunden = daten;
-      istLaden = false;
+    sucheKunden().then((liste) {
+      setState(() {
+        kunden = liste;
+        istLaden = false;
+      });
     });
   }
 
@@ -60,7 +55,6 @@ class _HomePageState extends State<HomePage> {
         double breite = constraints.maxWidth;
         bool nurIcons = breite < 800;
         double sidebarBreite = nurIcons ? 70 : 250;
-        // Sidebar und navigation
         return Scaffold(
           backgroundColor: const Color(0xFFF7F7F7),
           body: Row(
@@ -96,7 +90,6 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-
               Expanded(
                 child: Stack(
                   children: [
@@ -105,10 +98,7 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           key: _topBarKey,
                           color: Colors.white,
-                          constraints: const BoxConstraints(
-                            minHeight: 40,
-                            maxHeight: 50,
-                          ),
+                          constraints: const BoxConstraints(minHeight: 40, maxHeight: 50),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           child: Row(
                             children: [
@@ -116,11 +106,7 @@ class _HomePageState extends State<HomePage> {
                                 child: Align(
                                   alignment: Alignment.centerLeft,
                                   child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 500,
-                                      minHeight: 30,
-                                      maxHeight: 40,
-                                      ),
+                                    constraints: const BoxConstraints(maxWidth: 500, minHeight: 30, maxHeight: 40),
                                     child: TextField(
                                       cursorHeight: 16,
                                       cursorColor: const Color(0xFF333333),
@@ -128,23 +114,13 @@ class _HomePageState extends State<HomePage> {
                                       onChanged: (wert) async {
                                         setState(() {
                                           suchbegriff = wert.toLowerCase();
-                                        });
-
-                                      if (kunden.isEmpty) {
-                                        final daten = await ladeKombinierteKunden(); 
-
-                                        setState(() {
-                                          kunden = daten;
-                                        });
-                                      }
-                                        setState(() {                 
                                           suchErgebnisse = kunden.where((k) {
                                             return k.name.toLowerCase().contains(suchbegriff) ||
-                                              k.kundennummer.toLowerCase().contains(suchbegriff);
+                                                k.kontonummer.toLowerCase().contains(suchbegriff);
                                           }).toList();
                                           dropdownSichtbar = suchErgebnisse.isNotEmpty && suchbegriff.isNotEmpty;
                                         });
-                                      },               
+                                      },
                                       decoration: InputDecoration(
                                         isDense: true,
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -186,36 +162,22 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                         ),
-                        // Seiteninhalt
                         Expanded(
                           child: Builder(
                             builder: (context) {
                               switch (currentPage) {
                                 case 'Home':
-                                  return Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: istLaden
-                                        ? const Center(child: CircularProgressIndicator())
-                                        : ListView(
-                                            children: [
-                                              const Text(
-                                                'Zuletzt aufgerufen',
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                  return const Center(
+                                    child: Text('Geben Sie etwas in die Suche ein', style: TextStyle(fontSize: 18)),
                                   );
                                 case 'Kundenübersicht':
                                   return ausgewaehlterKunde != null
                                       ? Kundenuebersicht(kunde: ausgewaehlterKunde!)
                                       : const Center(child: Text('Kein Kunde ausgewählt'));
-
                                 case 'Ansprechpartner':
-                                  return Ansprechpartner(kunde: ausgewaehlterKunde!);
-
+                                  return ausgewaehlterKunde != null
+                                      ? Ansprechpartner(kunde: ausgewaehlterKunde!)
+                                      : const Center(child: Text('Kein Kunde ausgewählt'));
                                 default:
                                   return const Center(child: Text('Seite nicht gefunden'));
                               }
@@ -224,7 +186,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-
                     if (dropdownSichtbar)
                       Positioned(
                         top: 60,
@@ -244,15 +205,20 @@ class _HomePageState extends State<HomePage> {
                                 itemBuilder: (context, index) {
                                   final eintrag = suchErgebnisse[index];
                                   return ListTile(
-                                    title: Text('[${eintrag.kundennummer}] ${eintrag.name}'),
-                                    subtitle: Text(eintrag.telefon),
-                                    onTap: () {
+                                    title: Text('${eintrag.kontonummer} ${eintrag.name}'),
+                                    onTap: () async {
                                       setState(() {
-                                        ausgewaehlterKunde = eintrag;
-                                        currentPage = 'Kundenübersicht';
+                                        istLaden = true;
                                         dropdownSichtbar = false;
                                         suchbegriff = '';
-                                       
+                                      });
+
+                                      final details = await ladeKundeMitAdresse(eintrag);
+
+                                      setState(() {
+                                        ausgewaehlterKunde = details;
+                                        currentPage = 'Kundenübersicht';
+                                        istLaden = false;
                                       });
                                     },
                                   );
@@ -280,7 +246,16 @@ class _HomePageState extends State<HomePage> {
       onEnter: (_) => setState(() => hoveredPage = label),
       onExit: (_) => setState(() => hoveredPage = null),
       child: GestureDetector(
-        onTap: () => setState(() => currentPage = label),
+        onTap: () {
+          if (label == 'Ansprechpartner' && ausgewaehlterKunde == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Bitte zuerst einen Kunden auswählen')),
+            );
+            return;
+          }
+
+          setState(() => currentPage = label);
+        },
         child: Container(
           color: istAktiv || istHover ? const Color(0xFFFFE299) : Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -310,4 +285,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-} 
+}
