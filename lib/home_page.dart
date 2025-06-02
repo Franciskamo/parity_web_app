@@ -1,4 +1,3 @@
-// komplette angepasste home_page.dart mit richtiger Sidebar-Logik und aktueller Kunden-Übersicht
 import 'package:flutter/material.dart';
 import 'package:parity_web_app/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -253,7 +252,6 @@ class _HomePageState extends State<HomePage> {
             );
             return;
           }
-
           setState(() => currentPage = label);
         },
         child: Container(

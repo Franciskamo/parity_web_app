@@ -76,7 +76,6 @@ class _LoginPageState extends State<LoginPage> {
           refreshToken();
         });
       }
-
       print('Login erfolgreich!');
       print('Token: $token');
       print('Gültig bis: $expiresAt');
@@ -118,13 +117,12 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString('token', newtoken);
       await prefs.setString('expiresAt', newExpiresAt.toIso8601String());
 
-      final refreshZeit = newExpiresAt.difference(DateTime.now()) - const Duration(minutes: 2); // Zeit bis Ablauf berechnen
-      if (refreshZeit > Duration.zero) { // Timer nur starten wenn noch gültig
+      final refreshZeit = newExpiresAt.difference(DateTime.now()) - const Duration(minutes: 2); 
+      if (refreshZeit > Duration.zero) { 
         Timer(refreshZeit, () { 
           refreshToken(); 
         });
       }
-
     }
   }
 
